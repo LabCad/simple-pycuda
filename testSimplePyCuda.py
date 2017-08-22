@@ -4,7 +4,7 @@
 
 import ctypes
 
-from simplepycuda import SimplePyCuda, SimpleSourceModule
+from simplepycuda import SimplePyCuda, SimpleSourceModule, grid, block
 
 import numpy
 
@@ -76,13 +76,20 @@ def main():
 	cuda.eventDestroy(t1)
 	cuda.eventDestroy(t2)
 	#
-	mod = SimpleSourceModule(""" __global__ void doublify ( float* a , int x )
+	d = numpy.random.randn(4,4)
+	d = d.astype(numpy.float32)
+	d_gpu = cuda.mem_alloc(d.nbytes)
+	cuda.memcpy_htod(d_gpu, d)
+	mod = SimpleSourceModule(""" __global__ void doublify ( float* d )
 	  {
-	    int idx = threadIdx.x + threadIdx.y*4;
-	    a[idx] *= 2;
+	    //int idx = threadIdx.x + threadIdx.y*4;
+	    //d[idx] *= 2;
+            //printf("oi=%d\\n",idx);
 	  }
 	""")
-	func = mod.get_function_debug("doublify")
+	func = mod.get_function("doublify")
+	func(a_gpu, grid(1,2), block(3,4,5), 6, 7)
+	cuda.deviceSynchronize()
 
 	#
 	print "will reset device"
