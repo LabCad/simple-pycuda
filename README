@@ -1,0 +1,5 @@
+The library cudapp is the basis of SimplePyCuda, a simple wrapper for CUDA functions in Python.
+The idea is to workaround the issues regarding Context in old CUDA versions, that persist on PyCuda.
+
+MIT License - Igor Machado Coelho (2017)
+
