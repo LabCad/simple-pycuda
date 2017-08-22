@@ -122,7 +122,7 @@ class SimpleSourceModule:
 				f.write(" , ")
 			i += 3
 		f.write(" , simplepycuda_grid g, simplepycuda_block b, size_t shared, size_t stream) {\n")
-		f.write("\tprintf(\"lets go! grid(%d,%d) block(%d,%d,%d) shared=%lu stream=%lu\\n\",g.x,g.y,b.x,b.y,b.z,shared,stream);\n")
+		f.write("//\tprintf(\"lets go! grid(%d,%d) block(%d,%d,%d) shared=%lu stream=%lu\\n\",g.x,g.y,b.x,b.y,b.z,shared,stream);\n")
 		f.write("\tdim3 mygrid;  mygrid.x = g.x;  mygrid.y = g.y;\n")
 		f.write("\tdim3 myblock; myblock.x = b.x; myblock.y = b.y; myblock.z = b.z;\n")
 		f.write("\tkernel_")
@@ -136,7 +136,7 @@ class SimpleSourceModule:
 			i += 3
 		f.write(");\n")
 		f.write("cudaDeviceSynchronize();\n");
-		f.write("\tprintf(\"finished kernel!\");\n")
+		f.write("//\tprintf(\"finished kernel!\");\n")
 		f.write("}\n")
 		compilecommand = "nvcc --shared __simplepycuda_kernel_"+function_name+".cu -o __simplepycuda_kernel_"+function_name+".so --compiler-options -fPIC 2> __simplepycuda_kernel_"+function_name+".log"
 		f.write("\n\n//")
@@ -150,8 +150,8 @@ class SimpleSourceModule:
 
 		loadkernel = "./__simplepycuda_kernel_"+function_name+".so"
 		kernelfunction = ctypes.cdll.LoadLibrary(loadkernel)
-		
-		kernelfunction.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+		# TODO: add argtypes here in function kernel_loader!
+		# kernelfunction.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
 		return kernelfunction.kernel_loader
 
 	def get_function_debug(self, function_name):

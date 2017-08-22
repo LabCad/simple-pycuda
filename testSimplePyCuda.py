@@ -8,8 +8,21 @@ from simplepycuda import SimplePyCuda, SimpleSourceModule, grid, block
 
 import numpy
 
+def simpleLoadTest(cuda):
+	lib = ctypes.cdll.LoadLibrary('./__simplepycuda_kernel_doublify.so')
+	lib.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+	a = numpy.random.randn(4,4)
+	a_gpu = cuda.mem_alloc(a.nbytes)
+	lib.kernel_loader(a_gpu, grid(1,1), block(4,4,1), 0, 0)
+	print "Kernel OK"
+	# finish
+
 def main():
 	cuda = SimplePyCuda()
+
+	#simpleLoadTest(cuda)	
+	#return 0
+
 	print '============ SimplePyCuda ============'
 	p = cuda.malloc(10)
 	print "malloc'd 10 bytes. GPU pointer:", p
@@ -76,21 +89,25 @@ def main():
 	cuda.eventDestroy(t1)
 	cuda.eventDestroy(t2)
 	#
-	d = numpy.random.randn(4,4)
-	d = d.astype(numpy.float32)
-	d_gpu = cuda.mem_alloc(d.nbytes)
-	cuda.memcpy_htod(d_gpu, d)
-	mod = SimpleSourceModule(""" __global__ void doublify ( float* d )
+	print ""
+	print "will test doublify kernel"
+	cuda.memcpy_htod(a_gpu, a)
+	print a
+	mod = SimpleSourceModule(""" __global__ void doublify ( float* a )
 	  {
-	    //int idx = threadIdx.x + threadIdx.y*4;
-	    //d[idx] *= 2;
+	    int idx = threadIdx.x + threadIdx.y*4;
+	    a[idx] *= 2;
             //printf("oi=%d\\n",idx);
 	  }
 	""")
 	func = mod.get_function("doublify")
-	func(a_gpu, grid(1,2), block(3,4,5), 6, 7)
+	# TODO: this will enter automatically in get_function method... just need a few more time :)
+	func.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+	func(a_gpu, grid(1,1), block(4,4,1), 0, 0)
 	cuda.deviceSynchronize()
-
+	print "kernel executed"
+	cuda.memcpy_dtoh(a, a_gpu)
+	print a
 	#
 	print "will reset device"
 	cuda.deviceReset()
