@@ -4,7 +4,7 @@
 
 import ctypes
 
-from simplepycuda import SimplePyCuda
+from simplepycuda import SimplePyCuda, SimpleSourceModule
 
 import numpy
 
@@ -76,9 +76,13 @@ def main():
 	cuda.eventDestroy(t1)
 	cuda.eventDestroy(t2)
 	#
-
-	vx = """
-	"""
+	mod = SimpleSourceModule(""" __global__ void doublify ( float* a , int x )
+	  {
+	    int idx = threadIdx.x + threadIdx.y*4;
+	    a[idx] *= 2;
+	  }
+	""")
+	func = mod.get_function_debug("doublify")
 
 	#
 	print "will reset device"

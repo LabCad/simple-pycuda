@@ -1,2 +1,8 @@
 *~
 *.so
+*.pyc
+class_user*
+myclass*
+*.old
+testCuda.py
+__simplepycuda_*
