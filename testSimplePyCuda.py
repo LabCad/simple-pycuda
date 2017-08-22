@@ -17,11 +17,34 @@ def simpleLoadTest(cuda):
 	print "Kernel OK"
 	# finish
 
+def classicExample(cuda):
+	a = numpy.random.randn(4,4)
+	a = a.astype(numpy.float32)
+	print a
+	a_gpu = cuda.mem_alloc(a.nbytes)
+	cuda.memcpy_htod(a_gpu, a)
+	mod = SimpleSourceModule(""" __global__ void doublify ( float* a )
+	  {
+	    int idx = threadIdx.x + threadIdx.y*4;
+	    a[idx] *= 2;
+            //printf("oi=%d\\n",idx);
+	  }
+	""")
+	func = mod.get_function("doublify")
+	# TODO: this next line will be made automatically in get_function method... just need a few more time :)
+	func.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+	func(a_gpu, grid(1,1), block(4,4,1), 0, 0)
+	cuda.memcpy_dtoh(a, a_gpu)
+	cuda.deviceSynchronize()
+	print a
+	cuda.free(a_gpu) # this is not necessary in PyCUDA
+	print "Finished"
+
 def main():
 	cuda = SimplePyCuda()
 
-	#simpleLoadTest(cuda)	
-	#return 0
+	classicExample(cuda)	
+	return 0
 
 	print '============ SimplePyCuda ============'
 	p = cuda.malloc(10)
