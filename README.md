@@ -11,6 +11,7 @@ Usage:
 
 In Python:
 
+```python
 import ctypes
 import numpy
 from simplepycuda import SimplePyCuda, SimpleSourceModule, grid, block
@@ -45,6 +46,7 @@ def main():
 
 	classicExample(cuda)	
 	return 0
+``'
 
-# MIT License - Igor Machado Coelho (2017)
+MIT License - Igor Machado Coelho (2017)
 
