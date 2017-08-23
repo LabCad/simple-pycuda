@@ -83,7 +83,10 @@ class SimpleSourceModule:
 		self.code = kernelcode
 	def get_function(self, function_name):
 		# TODO: for now it just takes the first line as the kernel signature... should improve this!
-		splitcode = self.code.split('\n', 1)
+		id_global = self.code.find('__global__')
+		before = self.code[:id_global]
+		after  = self.code[id_global:]
+		splitcode = after.split('\n', 1)
 		kernel_signature = splitcode[0]
 		klist = kernel_signature.split()
 		assert klist[0] == "__global__"
@@ -93,7 +96,8 @@ class SimpleSourceModule:
 		assert klist[len(klist)-1] == ")"
 		cufile = "__simplepycuda_kernel_"+function_name+".cu"
 		f = open(cufile, "w")
-		f.write("#include<stdio.h>\n\n")   #hardcoded for printf purposes!
+		f.write(before);
+		f.write("\n\n");
 		f.write("struct simplepycuda_grid { int x,y; };\n\n")
 		f.write("struct simplepycuda_block { int x,y,z; };\n\n")
 		f.write("__global__ void kernel_")

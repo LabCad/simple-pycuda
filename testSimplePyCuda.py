@@ -23,11 +23,13 @@ def classicExample(cuda):
 	print a
 	a_gpu = cuda.mem_alloc(a.nbytes)
 	cuda.memcpy_htod(a_gpu, a)
-	mod = SimpleSourceModule(""" __global__ void doublify ( float* a )
+	mod = SimpleSourceModule(""" 
+          #include<stdio.h>
+          __global__ void doublify ( float* a )
 	  {
 	    int idx = threadIdx.x + threadIdx.y*4;
 	    a[idx] *= 2;
-            //printf("oi=%d\\n",idx);
+            printf("oi=%d\\n",idx);
 	  }
 	""")
 	func = mod.get_function("doublify")
