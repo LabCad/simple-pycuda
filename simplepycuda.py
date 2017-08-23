@@ -4,6 +4,7 @@ import ctypes
 from ctypes import *   #import Structure
 
 import os
+import os.path
 import re
 
 class SimplePyCuda:
@@ -99,6 +100,13 @@ class SimpleSourceModule:
 		assert klist[3] == "("
 		assert klist[len(klist)-1] == ")"
 		cufile = "__simplepycuda_kernel_"+function_name+".cu"
+		loadkernelpath = "./__simplepycuda_kernel_"+function_name+".so"
+		if os.path.isfile(loadkernelpath):
+			kernelfunction = ctypes.cdll.LoadLibrary(loadkernelpath)
+			# TODO: add argtypes here in function kernel_loader!
+			# kernelfunction.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+			return kernelfunction.kernel_loader
+		
 		f = open(cufile, "w")
 		f.write(before);
 		f.write("\n\n");
@@ -156,8 +164,8 @@ class SimpleSourceModule:
 			print "ERROR: compile error for kernel! view log file for more information!"
 			assert(false)
 
-		loadkernel = "./__simplepycuda_kernel_"+function_name+".so"
-		kernelfunction = ctypes.cdll.LoadLibrary(loadkernel)
+
+		kernelfunction = ctypes.cdll.LoadLibrary(loadkernelpath)
 		# TODO: add argtypes here in function kernel_loader!
 		# kernelfunction.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
 		return kernelfunction.kernel_loader
