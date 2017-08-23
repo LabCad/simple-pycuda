@@ -1,4 +1,4 @@
-1. Allow only valid function names for kernel
+1. Allow only valid function names for kernel [DONE]
 2. Compile only if not existing .so file
 3. Allow extra compile options
 4. Define function parameters automatically

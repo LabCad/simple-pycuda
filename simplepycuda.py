@@ -4,6 +4,7 @@ import ctypes
 from ctypes import *   #import Structure
 
 import os
+import re
 
 class SimplePyCuda:
 	def __init__(self):
@@ -81,8 +82,11 @@ class block(Structure):
 class SimpleSourceModule:
 	def __init__(self, kernelcode):
 		self.code = kernelcode
-	def get_function(self, function_name):
-		# TODO: for now it just takes the first line as the kernel signature... should improve this!
+	def get_function(self, function_name_input):	
+		if re.match("[_A-Za-z][_a-zA-Z0-9]*$",function_name_input) == None:
+			print "ERROR: kernel name is not valid '",function_name_input,"'"
+			assert(False)
+		function_name = re.match("[_A-Za-z][_a-zA-Z0-9]*$",function_name_input).group(0)
 		id_global = self.code.find('__global__')
 		before = self.code[:id_global]
 		after  = self.code[id_global:]
