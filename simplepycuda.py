@@ -81,8 +81,10 @@ class block(Structure):
 
 
 class SimpleSourceModule:
-	def __init__(self, kernelcode):
+	def __init__(self, kernelcode, nvcc='nvcc', options=[]):
 		self.code = kernelcode
+		self.nvcc = nvcc
+		self.options = options
 	def get_function(self, function_name_input):	
 		if re.match("[_A-Za-z][_a-zA-Z0-9]*$",function_name_input) == None:
 			print "ERROR: kernel name is not valid '",function_name_input,"'"
@@ -154,7 +156,11 @@ class SimpleSourceModule:
 		f.write("cudaDeviceSynchronize();\n");
 		f.write("//\tprintf(\"finished kernel!\");\n")
 		f.write("}\n")
-		compilecommand = "nvcc --shared __simplepycuda_kernel_"+function_name+".cu -o __simplepycuda_kernel_"+function_name+".so --compiler-options -fPIC 2> __simplepycuda_kernel_"+function_name+".log"
+		compilecommand = self.nvcc
+		compilecommand = compilecommand+" --shared __simplepycuda_kernel_"+function_name+".cu "
+		for option in self.options:
+			compilecommand = compilecommand+" "+option+" "
+		compilecommand = compilecommand+" -o __simplepycuda_kernel_"+function_name+".so --compiler-options -fPIC 2> __simplepycuda_kernel_"+function_name+".log"
 		f.write("\n\n//")
 		f.write(compilecommand)
 		f.write("\n")
@@ -162,7 +168,7 @@ class SimpleSourceModule:
 		oscode = os.system(compilecommand)
 		if oscode != 0:
 			print "ERROR: compile error for kernel! view log file for more information!"
-			assert(false)
+			assert(False)
 
 
 		kernelfunction = ctypes.cdll.LoadLibrary(loadkernelpath)

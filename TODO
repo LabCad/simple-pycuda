@@ -1,6 +1,6 @@
 1. Allow only valid function names for kernel [DONE]
 2. Compile only if not existing .so file [DONE]
-3. Allow extra compile options
+3. Allow extra compile options [DONE]
 4. Define function parameters automatically
 5. Create function to catch errors after kernel launch
  

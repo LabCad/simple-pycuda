@@ -31,7 +31,7 @@ def classicExample(cuda):
 	    a[idx] *= 2;
             printf("oi=%d\\n",idx);
 	  }
-	""")
+	""","nvcc", ["--ptxas-options=-v","--compiler-options -O3","--compiler-options -Wall"])
 	func = mod.get_function("doublify")
 	# TODO: this next line will be made automatically in get_function method... just need a few more time :)
 	func.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
