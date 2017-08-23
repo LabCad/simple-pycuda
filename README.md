@@ -46,7 +46,7 @@ def main():
 
 	classicExample(cuda)	
 	return 0
-``'
+```
 
-MIT License - Igor Machado Coelho (2017)
+[MIT License](LICENSE) - Igor Machado Coelho (2017)
 
