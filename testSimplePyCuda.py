@@ -4,16 +4,16 @@
 
 import ctypes
 
-from simplepycuda import SimplePyCuda, SimpleSourceModule, grid, block
+from simplepycuda import SimplePyCuda, SimpleSourceModule, Grid, Block
 
 import numpy
 
 def simpleLoadTest(cuda):
 	lib = ctypes.cdll.LoadLibrary('./__simplepycuda_kernel_doublify.so')
-	lib.kernel_loader.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
+	lib.kernel_loader.argtypes = [ctypes.c_void_p, Grid, Block, ctypes.c_ulong, ctypes.c_ulong]
 	a = numpy.random.randn(4,4)
 	a_gpu = cuda.mem_alloc(a.nbytes)
-	lib.kernel_loader(a_gpu, grid(1,1), block(4,4,1), 0, 0)
+	lib.kernel_loader(a_gpu, Grid(1, 1), Block(4, 4, 1), 0, 0)
 	print "Kernel OK"
 	# finish
 
@@ -34,8 +34,8 @@ def classicExample(cuda):
 	""","nvcc", ["--ptxas-options=-v","--compiler-options -O3","--compiler-options -Wall"])
 	func = mod.get_function("doublify")
 	# TODO: this next line will be made automatically in get_function method... just need a few more time :)
-	func.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
-	func(a_gpu, grid(1,1), block(4,4,1), 0, 0)
+	func.argtypes = [ctypes.c_void_p, Grid, Block, ctypes.c_ulong, ctypes.c_ulong]
+	func(a_gpu, Grid(1, 1), Block(4, 4, 1), 0, 0)
 	cuda.memcpy_dtoh(a, a_gpu)
 	cuda.deviceSynchronize()
 	print a
@@ -127,8 +127,8 @@ def main():
 	""")
 	func = mod.get_function("doublify")
 	# TODO: this will enter automatically in get_function method... just need a few more time :)
-	func.argtypes = [ctypes.c_void_p, grid, block, ctypes.c_ulong, ctypes.c_ulong]
-	func(a_gpu, grid(1,1), block(4,4,1), 0, 0)
+	func.argtypes = [ctypes.c_void_p, Grid, Block, ctypes.c_ulong, ctypes.c_ulong]
+	func(a_gpu, Grid(1, 1), Block(4, 4, 1), 0, 0)
 	cuda.deviceSynchronize()
 	print "kernel executed"
 	cuda.memcpy_dtoh(a, a_gpu)
