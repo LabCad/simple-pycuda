@@ -237,7 +237,7 @@ class SimpleSourceModule:
 		return "__simplepycuda_kernel_" + function_name
 
 	@staticmethod
-	def __get_compile_command(nvcc, filename, options, objectname=None):
+	def __get_compile_command(nvcc, filename, options, objectname=None, compiler_options=[]):
 		objectname = objectname or filename
 		if objectname.lower().endswith(".cu"):
 			objectname = objectname[:-3]
@@ -246,12 +246,13 @@ class SimpleSourceModule:
 
 		compilecommand = "{} --shared {}".format(nvcc, filename)
 		compilecommand = "{} {}".format(compilecommand, " ".join(options))
-		return "{} -o {}.so --compiler-options -fPIC 2> {}.log".format(compilecommand, objectname, objectname)
+		return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
+			" ".join(compiler_options), objectname)
 
 	@staticmethod
-	def compile_files(nvcc, files, options, objectname=None):
+	def compile_files(nvcc, files, options, objectname=None, compiler_options=[]):
 		objectname = objectname or files[0]
-		compilecommand = SimpleSourceModule.__get_compile_command(nvcc, " ".join(files), options, objectname)
+		compilecommand = SimpleSourceModule.__get_compile_command(nvcc, " ".join(files), options, objectname, compiler_options)
 		oscode = os.system(compilecommand)
 		if oscode != 0:
 			print "ERROR: compile error for kernel! view log file for more information!"
