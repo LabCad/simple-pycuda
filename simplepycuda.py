@@ -245,15 +245,23 @@ class SimpleSourceModule:
 			objectname = objectname[:-4]
 		
 		tokenxcomp = "-xcompiler"
+		compiler_options_new = []
+		for comp_op in compiler_options:
+			while tokenxcomp in comp_op.lower():
+				comp_op = comp_op[:comp_op.lower().find(tokenxcomp)] + comp_op[comp_op.lower().find(tokenxcomp) + len(tokenxcomp):]
+			compiler_options_new.append(comp_op)
+		compiler_options = compiler_options_new
 		compiler_options = [x.replace(tokenxcomp, "").strip() for x in compiler_options if x.strip().lower() != tokenxcomp]
-		compiler_options = compiler_options.remove("")
+		if "" in compiler_options:
+			compiler_options = compiler_options.remove("")
 
 		compilecommand = "{} --shared {}".format(nvcc, filename)
 		compilecommand = "{} {}".format(compilecommand, " ".join(options))
 		# TODO testar
 		#return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
 		#	" ".join(compiler_options), objectname)
-		return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname, " ".join(["-Xcompiler " + x for x in compiler_options]), objectname)
+		return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
+			" ".join(["-Xcompiler " + x for x in compiler_options]), objectname)
 
 	@staticmethod
 	def compile_files(nvcc, files, options, objectname=None, compiler_options=[]):
