@@ -269,14 +269,11 @@ class SimpleSourceModule:
 		compilecommand = SimpleSourceModule.__get_compile_command(nvcc, " ".join(files), options, objectname, compiler_options)
 		print compilecommand
 		oscode = os.system(compilecommand)
-		if oscode != 0:
-			print "ERROR: compile error for kernel! view log file for more information!"
-			assert False
+		assert oscode == 0, "ERROR: compile error for kernel! view log file for more information!"
 
 	def get_function(self, function_name_input, cache_function=True):
-		if re.match("[_A-Za-z][_a-zA-Z0-9]*$", function_name_input) is None:
-			print "ERROR: kernel name is not valid '", function_name_input, "'"
-			assert False
+		assert re.match("[_A-Za-z][_a-zA-Z0-9]*$", function_name_input) is not None,\
+			("ERROR: kernel name is not valid '", function_name_input, "'")
 		function_name = re.match("[_A-Za-z][_a-zA-Z0-9]*$", function_name_input).group(0)
 		globalword = '__global__'
 		id_global = self.code.find(globalword)
@@ -293,11 +290,7 @@ class SimpleSourceModule:
 		func_param_str = rem_ast.sub('* ', params_rexp.match(kernel_signature).group(1)).split(',')
 		func_params = [item for sublist in [param.split() for param in func_param_str] for item in sublist]
 		klist = klist[:4] + func_params + [klist[-1]]
-		assert klist[0] == globalword
-		assert klist[1] == "void"
-		assert klist[2] == function_name
-		assert klist[3] == "("
-		assert klist[len(klist)-1] == ")"
+		__check_k_list(klist)
 		# cufile = "__simplepycuda_kernel_" + function_name + ".cu"
 		loadkernelpath = "./" + SimpleSourceModule.__get_file_name(function_name) + ".so"
 		if cache_function and os.path.isfile(loadkernelpath):
@@ -310,6 +303,14 @@ class SimpleSourceModule:
 
 		return SimpleSourceModule.__get_os_function(loadkernelpath, func_params)
 
+	def __check_k_list(self, klist):
+		globalword = '__global__'
+		assert klist[0] == globalword, "Function must be a kernel"
+		assert klist[1] == "void", "Kernel function must return void"
+		assert klist[2] == function_name, "Function name"
+		assert klist[3] == "(", "Params must starts with a ("
+		assert klist[len(klist) - 1] == ")", "Params must ends with a )"
+
 	def get_function_debug(self, function_name):
 		print "Will debug kernel function call for '", function_name, "'! This is a development-only feature!"
 		print self.code
@@ -320,18 +321,13 @@ class SimpleSourceModule:
 
 		klist = kernel_signature.split()
 		print klist
-		assert klist[0] == "__global__"
-		assert klist[1] == "void"
-		assert klist[2] == function_name
-		assert klist[3] == "("
-		assert klist[len(klist)-1] == ")"
+		__check_k_list(klist)
 		i = 4
 		while i < len(klist)-1:
 			print "variable type: ", klist[i]
 			print "variable name: ", klist[i+1]
-			if klist[i+1][0] == "*":
-				print "ERROR: pointers should be put together with TYPES, not variables.. please follow C++ style :)"
-				assert False
+			assert klist[i+1][0] != "*", \
+				"ERROR: pointers should be put together with TYPES, not variables.. please follow C++ style :)"
 			if i+2 < len(klist)-1:
 				assert klist[i+2] == ","
 			i += 3
