@@ -1,5 +1,6 @@
 #!/usr/bin/python
-from enum import Enum
+# TODO pip install enum34
+# from enum import Enum
 import ctypes
 from ctypes import *   #import Structure
 
@@ -359,7 +360,8 @@ class SimpleSourceModule(object):
 		return None
 
 
-class CudaError(Enum):
+# class CudaError(Enum):
+class CudaError(object):
 	"""
 	https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html
 	"""
