@@ -9,10 +9,12 @@ import re
 
 
 class SimplePyCuda:
-	def __init__(self, path="./"):
-		cudaappfile = 'cudapp'
+	def __init__(self, path="./", cudaappfile='cudapp'):
+		if not path.endswith("/"):
+			path = path + "/"
+		assert os.path.isfile(path + cudaappfile + '.cu'), "CUDA app file not found"
 		if not os.path.isfile(path + cudaappfile + '.so'):
-			SimpleSourceModule.compile_files('nvcc', [path + cudaappfile + '.cu'], [])
+			SimpleSourceModule.compile_files(None, [path + cudaappfile + '.cu'], [])
 
 		self.lib = ctypes.cdll.LoadLibrary(path + cudaappfile + '.so')
 		self.lib.cudappMemcpyHostToDevice.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_ulong]
@@ -29,9 +31,21 @@ class SimplePyCuda:
 		self.lib.cudappEventRecord.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
 		self.lib.cudappEventElapsedTime.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 		self.lib.cudappEventElapsedTime.restype = ctypes.c_float
+		#
+		self.lib.cudappGetLastError.argtypes = []
+		self.lib.cudappGetLastError.restype = ctypes.c_int
+		self.lib.cudappGetErrorEnum.argtypes = [ctypes.c_int]
+		# self.lib.cudappGetErrorEnum.restype = numpy.ctypeslib.ndpointer(dtype=ctypes.c_char, ndim=1, flags='CONTIGUOUS')
+		self.lib.cudappGetErrorEnum.restype = ctypes.c_char_p
 
 	def getDeviceCount(self):
 		return self.lib.cudappGetDeviceCount()
+
+	def getLastError(self):
+		return self.lib.cudappGetLastError()
+
+	def getErrorEnum(self, cudaError):
+		return self.lib.cudappGetErrorEnum(cudaError)
 
 	def setDevice(self, index):
 		self.lib.cudappSetDevice(index)
@@ -51,23 +65,23 @@ class SimplePyCuda:
 
 	def free(self, gpu_pointer):
 		return self.lib.cudappFree(gpu_pointer)
-	
+
 	def memset(self, gpu_pointer, bytevalue, count):
 		return self.lib.cudappMemset(gpu_pointer, bytevalue, count)
 
 	def memcpy_htod(self, d, h, nbytes):
-		return self.lib.cudappMemcpyHostToDevice(d,h,nbytes)
+		return self.lib.cudappMemcpyHostToDevice(d, h, nbytes)
 	# pycuda compatible version
 
 	def memcpy_htod(self, gpu_pointer, cpu):
-		self.lib.cudappMemcpyHostToDevice(gpu_pointer, ctypes.c_void_p(cpu.ctypes.data), cpu.nbytes)		
+		self.lib.cudappMemcpyHostToDevice(gpu_pointer, ctypes.c_void_p(cpu.ctypes.data), cpu.nbytes)
 
 	def memcpy_dtoh(self, h, d, nbytes):
 		return self.lib.cudappMemcpyDeviceToHost(h,d,nbytes)
 	# pycuda compatible version
 
 	def memcpy_dtoh(self, cpu, gpu_pointer):
-		self.lib.cudappMemcpyDeviceToHost(ctypes.c_void_p(cpu.ctypes.data), gpu_pointer, cpu.nbytes)		
+		self.lib.cudappMemcpyDeviceToHost(ctypes.c_void_p(cpu.ctypes.data), gpu_pointer, cpu.nbytes)
 
 	def eventCreate(self):
 		return self.lib.cudappEventCreate()
@@ -100,7 +114,7 @@ class FunctionToCall:
 		self.__block = Block(_block[0], _block[1], _block[2])
 		self.__sharedsize = sharedsize
 		self.__streamid = streamid
-		self.set_arguments(self.__get_param_type(func_params))
+		self.set_arguments(FunctionToCall.__get_param_type(func_params))
 
 	def __call__(self, *args, **kwargs):
 		return self.__func(*(args + (self.__grid, self.__block, self.__sharedsize, self.__streamid)), **kwargs)
@@ -125,7 +139,8 @@ class FunctionToCall:
 	def argtypes(self):
 		return self.__func.argtypes
 
-	def __get_param_type(self, func_params):
+	@staticmethod
+	def __get_param_type(func_params):
 		rem_spc = re.compile('\s+')
 		resp = []
 		name_param =\
@@ -258,13 +273,22 @@ class SimpleSourceModule:
 		compilecommand = "{} --shared {}".format(nvcc, filename)
 		compilecommand = "{} {}".format(compilecommand, " ".join(options))
 		# TODO testar
-		#return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
+		# return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
 		#	" ".join(compiler_options), objectname)
 		return "{} -o {}.so --compiler-options -fPIC {} 2> {}.log".format(compilecommand, objectname,
 			" ".join(["-Xcompiler " + x for x in compiler_options]), objectname)
 
 	@staticmethod
 	def compile_files(nvcc, files, options, objectname=None, compiler_options=[]):
+		if nvcc is None:
+			nvccVersions = ['9.2', '9.1', '9.0', '8.0', '7.5', '7.0', '6.5', '6.0', '5.5', '5.0',
+				'4.2', '4.1', '4.0', '3.2', '3.1', '3.0', '2.3', '2.2', '2.1', '2.0', '1.1', '1.0']
+			for nvccVer in nvccVersions:
+				nvccAddres = "/usr/local/cuda-{}/bin/nvcc".format(nvccVer)
+				if os.path.isfile(nvccAddres):
+					nvcc = nvccAddres
+					break
+			assert nvcc is not None, "No nvcc provided and no CUDA tool kit were found"
 		objectname = objectname or files[0]
 		compilecommand = SimpleSourceModule.__get_compile_command(nvcc, " ".join(files), options, objectname, compiler_options)
 		print compilecommand

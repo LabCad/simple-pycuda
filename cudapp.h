@@ -27,11 +27,13 @@ extern "C" void cudappEventSynchronize(void*);
 extern "C" float cudappEventElapsedTime(void*, void*);
 extern "C" void cudappEventDestroy(void*);
 
+extern "C" cudaError_t cudappGetLastError();
+
 // helper functions for error checking
 
 #define checkCudaErrors(val)           check ( (val), #val )
 
-const char* cudappGetErrorEnum(cudaError_t error)
+extern "C" const char* cudappGetErrorEnum(cudaError_t error)
 {
     switch (error)
     {

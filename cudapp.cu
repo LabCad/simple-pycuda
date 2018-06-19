@@ -72,5 +72,6 @@ extern "C" void cudappEventDestroy(void* event) {
 	delete ev;
 }
 
-
-
+extern "C" cudaError_t cudappGetLastError() {
+	return cudaGetLastError();
+}
