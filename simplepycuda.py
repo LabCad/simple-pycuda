@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+from enum import Enum
 import ctypes
 from ctypes import *   #import Structure
 
@@ -8,7 +8,7 @@ import os.path
 import re
 
 
-class SimplePyCuda:
+class SimplePyCuda(object):
 	def __init__(self, path="./", cudaappfile='cudapp'):
 		if not path.endswith("/"):
 			path = path + "/"
@@ -107,7 +107,7 @@ class Block(Structure):
 	_fields_ = [("x", c_int), ("y", c_int), ("z", c_int)]
 
 
-class FunctionToCall:
+class FunctionToCall(object):
 	def __init__(self, func, func_params, _grid=(1, 1), _block=(4, 4, 1), sharedsize=0, streamid=0):
 		self.__func = func
 		self.__grid = Grid(_grid[0], _grid[1])
@@ -176,7 +176,7 @@ class FunctionToCall:
 			self.__func.argtypes = arglist + self.__func.argtypes
 
 
-class SimpleSourceModule:
+class SimpleSourceModule(object):
 	def __init__(self, kernelcode, nvcc='nvcc', options=[]):
 		self.code = kernelcode
 		self.nvcc = nvcc
@@ -357,3 +357,97 @@ class SimpleSourceModule:
 			i += 3
 		print "Kernel parameters seem ok :)"
 		return None
+
+
+class CudaError(Enum):
+	"""
+	https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html
+	"""
+	Success = 0
+	ErrorMissingConfiguration = 1
+	ErrorMemoryAllocation = 2
+	ErrorInitializationError = 3
+	ErrorLaunchFailure = 4
+	ErrorPriorLaunchFailure = 5
+	ErrorLaunchTimeout = 6
+	ErrorLaunchOutOfResources = 7
+	ErrorInvalidDeviceFunction = 8
+	ErrorInvalidConfiguration = 9
+	ErrorInvalidDevice = 10
+	ErrorInvalidValue = 11
+	ErrorInvalidPitchValue = 12
+	ErrorInvalidSymbol = 13
+	ErrorMapBufferObjectFailed = 14
+	ErrorUnmapBufferObjectFailed = 15
+	ErrorInvalidHostPointer = 16
+	ErrorInvalidDevicePointer = 17
+	ErrorInvalidTexture = 18
+	ErrorInvalidTextureBinding = 19
+	ErrorInvalidChannelDescriptor = 20
+	ErrorInvalidMemcpyDirection = 21
+	ErrorAddressOfConstant = 22
+	ErrorTextureFetchFailed = 23
+	ErrorTextureNotBound = 24
+	ErrorSynchronizationError = 25
+	ErrorInvalidFilterSetting = 26
+	ErrorInvalidNormSetting = 27
+	ErrorMixedDeviceExecution = 28
+	ErrorCudartUnloading = 29
+	ErrorUnknown = 30
+	ErrorNotYetImplemented = 31
+	ErrorMemoryValueTooLarge = 32
+	ErrorInvalidResourceHandle = 33
+	ErrorNotReady = 34
+	ErrorInsufficientDriver = 35
+	ErrorSetOnActiveProcess = 36
+	ErrorInvalidSurface = 37
+	ErrorNoDevice = 38
+	ErrorECCUncorrectable = 39
+	ErrorSharedObjectSymbolNotFound = 40
+	ErrorSharedObjectInitFailed = 41
+	ErrorUnsupportedLimit = 42
+	ErrorDuplicateVariableName = 43
+	ErrorDuplicateTextureName = 44
+	ErrorDuplicateSurfaceName = 45
+	ErrorDevicesUnavailable = 46
+	ErrorInvalidKernelImage = 47
+	ErrorNoKernelImageForDevice = 48
+	ErrorIncompatibleDriverContext = 49
+	ErrorPeerAccessAlreadyEnabled = 50
+	ErrorPeerAccessNotEnabled = 51
+	ErrorDeviceAlreadyInUse = 54
+	ErrorProfilerDisabled = 55
+	ErrorProfilerNotInitialized = 56
+	ErrorProfilerAlreadyStarted = 57
+	ErrorProfilerAlreadyStopped = 58
+	ErrorAssert = 59
+	ErrorTooManyPeers = 60
+	ErrorHostMemoryAlreadyRegistered = 61
+	ErrorHostMemoryNotRegistered = 62
+	ErrorOperatingSystem = 63
+	ErrorPeerAccessUnsupported = 64
+	ErrorLaunchMaxDepthExceeded = 65
+	ErrorLaunchFileScopedTex = 66
+	ErrorLaunchFileScopedSurf = 67
+	ErrorSyncDepthExceeded = 68
+	ErrorLaunchPendingCountExceeded = 69
+	ErrorNotPermitted = 70
+	ErrorNotSupported = 71
+	ErrorHardwareStackError = 72
+	ErrorIllegalInstruction = 73
+	ErrorMisalignedAddress = 74
+	ErrorInvalidAddressSpace = 75
+	ErrorInvalidPc = 76
+	ErrorIllegalAddress = 77
+	ErrorInvalidPtx = 78
+	ErrorInvalidGraphicsContext = 79
+	ErrorNvlinkUncorrectable = 80
+	ErrorJitCompilerNotFound = 81
+	ErrorCooperativeLaunchTooLarge = 82
+	ErrorStartupFailure = 0x7f
+	ErrorApiFailureBase = 10000
+
+	def fromEnumName(self, error_enum_name='Success'):
+		if error_enum_name.startswith("cuda"):
+			error_enum_name = error_enum_name[4:]
+		return getattr(self, error_enum_name)
