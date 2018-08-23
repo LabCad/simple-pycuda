@@ -1,12 +1,16 @@
 The library cudapp is the basis of SimplePyCuda, a simple wrapper for CUDA functions in Python.
 The idea is to workaround the issues regarding Context in old CUDA versions, that persist on PyCuda.
 
-Usage:
+No need to pre-compile the project.
 
-"make [all]" will build the lib cudapp.so
+Install from pip:
+```bash
+pip install simplepycuda
+```
 
-"make run" will execute "testSimplePyCuda.py", using library "simplepycuda.py".
 
+
+Simple code example.
 ==========================
 
 In Python:
@@ -48,5 +52,5 @@ def main():
 	return 0
 ```
 
-[MIT License](LICENSE) - Igor Machado Coelho (2017)
+[MIT License](LICENSE) - Igor Machado Coelho and Rodolfo Pereira Araujo (2017)
 

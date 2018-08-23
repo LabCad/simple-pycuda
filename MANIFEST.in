@@ -1,5 +1,6 @@
-include simple_pycuda/*.c
-include simple_pycuda/*.cpp
-include simple_pycuda/*.cu
-include simple_pycuda/*.h
-include simple_pycuda/*.hpp
+include simplepycuda/*.c
+include simplepycuda/*.cpp
+include simplepycuda/*.cu
+include simplepycuda/*.h
+include simplepycuda/*.hpp
+
