@@ -3,7 +3,7 @@ The idea is to workaround the issues regarding Context in old CUDA versions, tha
 
 No need to pre-compile the project.
 
-Install from pip:
+Install from pip (https://pypi.org/project/simplepycuda/):
 ```bash
 pip install simplepycuda
 ```
