@@ -1,3 +1,15 @@
+simple-pycuda
+=============
+
+<p align="center">
+  <a href="https://github.com/LabCad/simple-pycuda">
+    <img src="https://tokei.rs/b1/github/LabCad/simple-pycuda?category=lines" alt="Current total lines.">
+  </a>
+  <a href="https://github.com/LabCad/simple-pycuda/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License.">
+  </a>
+</p>
+
 The library cudapp is the basis of SimplePyCuda, a simple wrapper for CUDA functions in Python.
 The idea is to workaround the issues regarding Context in old CUDA versions, that persist on PyCuda.
 
